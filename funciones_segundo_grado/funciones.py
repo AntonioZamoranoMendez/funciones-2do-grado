@@ -1,125 +1,137 @@
-from tkinter import Tk, Label, Entry, Button
+from tkinter import Tk, Label, Entry, Button, Frame
 from math import sqrt
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-
+# Funciones
 def ejemplo_reales():
-    # a = 1 b = 4 c = 0
-    # a = 1 b = 2 c = 6
     limpiar()
-    a.insert(0, "1")
-    b.insert(0, "4")
-    c.insert(0, "0")
-
+    a_entry.insert(0, "1")
+    b_entry.insert(0, "4")
+    c_entry.insert(0, "0")
 
 def ejemplo_complejos():
     limpiar()
-    a.insert(0, "1")
-    b.insert(0, "2")
-    c.insert(0, "6")
-
+    a_entry.insert(0, "1")
+    b_entry.insert(0, "2")
+    c_entry.insert(0, "6")
 
 def limpiar():
-    fallo.config(text="")
-    a.delete(0, "end")
-    b.delete(0, "end")
-    c.delete(0, "end")
-
+    fallo_label.config(text="")
+    a_entry.delete(0, "end")
+    b_entry.delete(0, "end")
+    c_entry.delete(0, "end")
+    x1_label.config(text="x1 =")
+    x2_label.config(text="x2 =")
 
 def resolver_ecuacion():
     try:
-        var_a = float(a.get())
-        var_b = float(b.get())
-        var_c = float(c.get())
-        if var_b**2 >= 4 * var_a * var_c:
-            rx1 = (-var_b + sqrt((var_b**2) - (4 * var_a * var_c))) / (2 * var_a)
-            rx2 = (-var_b - sqrt((var_b**2) - (4 * var_a * var_c))) / (2 * var_a)
-            x1.config(text=f"x1 = {rx1:.3f}")
-            x2.config(text=f"x2 = {rx2:.3f}")
-            fallo.config(text="")
+        var_a = float(a_entry.get())
+        var_b = float(b_entry.get())
+        var_c = float(c_entry.get())
+        discriminante = var_b**2 - 4*var_a*var_c
+        if discriminante >= 0:
+            rx1 = (-var_b + sqrt(discriminante)) / (2 * var_a)
+            rx2 = (-var_b - sqrt(discriminante)) / (2 * var_a)
+            x1_label.config(text=f"x1 = {rx1:.3f}")
+            x2_label.config(text=f"x2 = {rx2:.3f}")
+            fallo_label.config(text="")
         else:
-            fallo.config(text="Solucion compleja")
+            fallo_label.config(text="Solución compleja")
     except ValueError:
-        fallo.config(text="Error: Debes poner números")
-
+        fallo_label.config(text="Error: Debes poner números")
 
 def graficar():
-    # 1. Crear la figura de Matplotlib
-    fig, ax = plt.subplots(figsize=(5, 4), dpi=100)
-
-    # 2. Obtener los valores de los Entry (asumiendo que se llaman a, b, c)
     try:
-        val_a = float(a.get())
-        val_b = float(b.get())
-        val_c = float(c.get())
-    except:
-        # Valores por defecto si hay error
-        val_a, val_b, val_c = 1, 2, 5
+        val_a = float(a_entry.get())
+        val_b = float(b_entry.get())
+        val_c = float(c_entry.get())
+    except ValueError:
+        val_a, val_b, val_c = 1, 2, 5  # valores por defecto
 
     x = np.linspace(-10, 10, 400)
     y = val_a * x**2 + val_b * x + val_c
 
-    ax.plot(x, y)
+    fig, ax = plt.subplots(figsize=(6, 5), dpi=100)
+    ax.plot(x, y, label=f"{val_a}x² + {val_b}x + {val_c}")
     ax.axhline(0, color="black", linewidth=1)
     ax.axvline(0, color="black", linewidth=1)
-    ax.set_title("Gráfica de la Función Cuadrática")
+    ax.set_title("Gráfica")
+    ax.set_xlabel("X")
+    ax.set_ylabel("Y")
     ax.grid(True)
+    ax.legend()
 
-    # 3. Crear el widget de Tkinter que contiene la gráfica
-    canvas = FigureCanvasTkAgg(fig, master=ventana)  # 'ventana' es tu Tk()
+    global canvas_widget
+    try:
+        canvas_widget.destroy()
+    except:
+        pass
+
+    canvas = FigureCanvasTkAgg(fig, master=frame_graph)
     canvas_widget = canvas.get_tk_widget()
-
-    # 4. Ubicar el widget en la ventana (puedes usar pack, grid o place)
-    canvas_widget.place(x=700, y=100)  # Ajusta las coordenadas a tu gusto
+    canvas_widget.pack(fill="both", expand=True)
     canvas.draw()
 
 
+# Ventana principal
 ventana = Tk()
-ventana.attributes("-topmost", True)
-ventana.geometry("1280x900")
-ventana.title("sistema para resolver funciones de segundo grado")
-titulo = Label(
-    ventana,
-    text="sistema para encontrar las raices de una ecuacion cuadratica",
-    font=("Arial", 24),
-)
-titulo.place(x=0, y=0)
-constantes = Label(ventana, text="a =  \n\n b =  \n\n c = ", font=("Arial", 24))
-constantes.place(x=10, y=40)
-x1 = Label(ventana, text="x1=", font=("Arial", 24))
-x1.place(x=10, y=250)
-x2 = Label(ventana, text="x2=", font=("Arial", 24))
-x2.place(x=10, y=300)
-ecuacion = Label(ventana, text="f(x)=ax^2 + bx + c", font=("Arial", 24))
-ecuacion.place(x=10, y=350)
-a = Entry(ventana, font=("Arial", 24))
-a.place(x=80, y=40)
-b = Entry(ventana, font=("Arial", 24))
-b.place(x=80, y=110)
-c = Entry(ventana, font=("Arial", 24))
-c.place(x=80, y=200)
-boton = Button(
-    ventana, text="resolver ecuacion", font=("Arial", 24), command=resolver_ecuacion
-)
-boton.place(x=10, y=400)
-boton2 = Button(
-    ventana,
-    text="ejemplo raices complejas",
-    font=("Arial", 24),
-    command=ejemplo_complejos,
-)
-boton2.place(x=10, y=500)
-boton3 = Button(
-    ventana, text="ejemplo raices reales", font=("Arial", 24), command=ejemplo_reales
-)
-boton3.place(x=10, y=600)
-boton3 = Button(ventana, text="graficar", font=("Arial", 24), command=graficar)
-boton3.place(x=10, y=700)
-boton4 = Button(ventana, text="limpiar", font=("Arial", 24), command=limpiar)
-boton4.place(x=10, y=800)
-fallo = Label(ventana, font=("Arial", 24))
-fallo.place(x=600, y=600)
-# esta linea siempre va al final
+ventana.geometry("950x650")
+ventana.title("Sistema para Resolver Ecuaciones Cuadráticas")
+ventana.configure(bg="#2c2c2c")  # Fondo oscuro
+
+# Título centrado arriba
+titulo = Label(ventana, text="Sistema para Resolver Ecuaciones Cuadráticas", font=("Arial", 16, "bold"), fg="white", bg="#2c2c2c")
+titulo.place(relx=0.5, y=10, anchor="n")
+
+# Panel izquierdo para entradas y resultados
+panel_izquierdo = Frame(ventana, bg="#2c2c2c")
+panel_izquierdo.place(x=20, y=50, width=300, height=500)
+
+Label(panel_izquierdo, text="a =", font=("Arial", 14), fg="white", bg="#2c2c2c").place(x=0, y=0)
+Label(panel_izquierdo, text="b =", font=("Arial", 14), fg="white", bg="#2c2c2c").place(x=0, y=50)
+Label(panel_izquierdo, text="c =", font=("Arial", 14), fg="white", bg="#2c2c2c").place(x=0, y=100)
+Label(panel_izquierdo, text="ax^2 + bx + c = 0", font=("Arial", 14), fg="white", bg="#2c2c2c").place(x=0, y=150)
+
+a_entry = Entry(panel_izquierdo, font=("Arial", 14))
+a_entry.place(x=50, y=0, width=200)
+b_entry = Entry(panel_izquierdo, font=("Arial", 14))
+b_entry.place(x=50, y=50, width=200)
+c_entry = Entry(panel_izquierdo, font=("Arial", 14))
+c_entry.place(x=50, y=100, width=200)
+
+x1_label = Label(panel_izquierdo, text="x1 =", font=("Arial", 14), fg="white", bg="#2c2c2c")
+x1_label.place(x=0, y=200)
+x2_label = Label(panel_izquierdo, text="x2 =", font=("Arial", 14), fg="white", bg="#2c2c2c")
+x2_label.place(x=0, y=240)
+
+# Panel derecho para gráfica con borde azul
+frame_graph = Frame(ventana, bg="#1a1a1a", highlightbackground="blue", highlightthickness=1)
+frame_graph.place(x=350, y=50, width=530, height=500)
+
+# Botones abajo en dos filas, centrados respecto al frame de gráfica
+boton_graficar = Button(ventana, text="Graficar", font=("Arial", 12), width=12, command=graficar)
+boton_zoom_out = Button(ventana, text="Zoom Out", font=("Arial", 12), width=12)
+boton_zoom_in = Button(ventana, text="Zoom In", font=("Arial", 12), width=12)
+
+boton_graficar.place(x=360, y=570)
+boton_zoom_out.place(x=500, y=570)
+boton_zoom_in.place(x=640, y=570)
+
+boton_ejemplo_reales = Button(ventana, text="Ejemplo raíces reales", font=("Arial", 12), width=18, command=ejemplo_reales)
+boton_ejemplo_complejos = Button(ventana, text="Ejemplo raíces complejas", font=("Arial", 12), width=20, command=ejemplo_complejos)
+boton_resolver = Button(ventana, text="Resolver", font=("Arial", 12), width=12, command=resolver_ecuacion)
+boton_limpiar = Button(ventana, text="Limpiar", font=("Arial", 12), width=12, command=limpiar)
+
+boton_ejemplo_reales.place(x=20, y=520)
+boton_ejemplo_complejos.place(x=20, y=570)
+boton_resolver.place(x=780, y=570)
+boton_limpiar.place(x= 230, y=570)
+
+fallo_label = Label(ventana, font=("Arial", 12), fg="red", bg="#2c2c2c")
+fallo_label.place(x=20, y=610)
+
+canvas_widget = None
+
 ventana.mainloop()
