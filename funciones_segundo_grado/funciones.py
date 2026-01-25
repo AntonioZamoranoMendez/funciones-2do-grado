@@ -4,6 +4,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
+
+fig = None
+ax = None
+canvas = None
+zoom_factor = 0.8
+
 # Funciones
 def ejemplo_reales():
     limpiar()
@@ -43,37 +49,68 @@ def resolver_ecuacion():
         fallo_label.config(text="Error: Debes poner números")
 
 def graficar():
+    global fig, ax, canvas, canvas_widget
+
     try:
         val_a = float(a_entry.get())
         val_b = float(b_entry.get())
         val_c = float(c_entry.get())
     except ValueError:
-        val_a, val_b, val_c = 1, 2, 5  # valores por defecto
+        val_a, val_b, val_c = 1, 2, 5
 
+    # Datos
     x = np.linspace(-10, 10, 400)
     y = val_a * x**2 + val_b * x + val_c
 
+    # Crear figura
     fig, ax = plt.subplots(figsize=(6, 5), dpi=100)
     ax.plot(x, y, label=f"{val_a}x² + {val_b}x + {val_c}")
-    ax.axhline(0, color="black", linewidth=1)
-    ax.axvline(0, color="black", linewidth=1)
+    ax.axhline(0, linewidth=1)
+    ax.axvline(0, linewidth=1)
     ax.set_title("Gráfica")
     ax.set_xlabel("X")
     ax.set_ylabel("Y")
     ax.grid(True)
     ax.legend()
 
-    global canvas_widget
+    # Eliminar gráfica anterior si existe
     try:
         canvas_widget.destroy()
     except:
         pass
 
+    # Insertar gráfica en Tkinter
     canvas = FigureCanvasTkAgg(fig, master=frame_graph)
     canvas_widget = canvas.get_tk_widget()
     canvas_widget.pack(fill="both", expand=True)
     canvas.draw()
 
+
+
+def zoom_in():
+    global ax, canvas
+    if ax is None:
+        return
+
+    xlim = ax.get_xlim()
+    ylim = ax.get_ylim()
+
+    ax.set_xlim(xlim[0] * zoom_factor, xlim[1] * zoom_factor)
+    ax.set_ylim(ylim[0] * zoom_factor, ylim[1] * zoom_factor)
+    canvas.draw()
+
+
+def zoom_out():
+    global ax, canvas
+    if ax is None:
+        return
+
+    xlim = ax.get_xlim()
+    ylim = ax.get_ylim()
+
+    ax.set_xlim(xlim[0] / zoom_factor, xlim[1] / zoom_factor)
+    ax.set_ylim(ylim[0] / zoom_factor, ylim[1] / zoom_factor)
+    canvas.draw()
 
 # Ventana principal
 ventana = Tk()
@@ -112,8 +149,8 @@ frame_graph.place(x=350, y=50, width=530, height=500)
 
 # Botones abajo en dos filas, centrados respecto al frame de gráfica
 boton_graficar = Button(ventana, text="Graficar", font=("Arial", 12), width=12, command=graficar)
-boton_zoom_out = Button(ventana, text="Zoom Out", font=("Arial", 12), width=12)
-boton_zoom_in = Button(ventana, text="Zoom In", font=("Arial", 12), width=12)
+boton_zoom_out = Button(ventana, text="Zoom Out", font=("Arial", 12), width=12, command=zoom_out)
+boton_zoom_in = Button(ventana, text="Zoom In", font=("Arial", 12), width=12, command=zoom_in)
 
 boton_graficar.place(x=360, y=570)
 boton_zoom_out.place(x=500, y=570)
